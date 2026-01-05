@@ -74,7 +74,7 @@ app.get('/', (req, res) => res.send('Server is working!'));
 
 // ---------------- ROUTES ----------------
 // Uncomment or comment the routes as needed
-// app.use('/auth', require('../routes/auth.routes'));
+app.use('/auth', require('../routes/auth.routes'));
 app.use('/leave', require('../routes/leave.routes'));
 app.use('/clients', require('../routes/clients.routes'));
 app.use('/user', require('../routes/user.routes'));
