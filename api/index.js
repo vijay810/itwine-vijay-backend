@@ -61,6 +61,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('../config/db');
 const errorHandler = require('../middlewares/error.middleware');
+const serverless = require('serverless-http');
 
 const app = express();
 
@@ -71,27 +72,24 @@ app.use(express.json());
 app.get('/', (req, res) => res.send('Server is working!'));
 
 // Routes
-// app.use('/auth', require('../routes/auth.routes'));
+app.use('/auth', require('../routes/auth.routes'));
 app.use('/leave', require('../routes/leave.routes'));
 app.use('/clients', require('../routes/clients.routes'));
 app.use('/user', require('../routes/user.routes'));
 app.use('/news', require('../routes/news.routes'));
 
+// Error handler
 app.use(errorHandler);
 
-// Connect to DB
+// Connect to MongoDB (reuse connection in serverless)
+let isConnected = false;
 const connectToDatabase = async () => {
+   if (isConnected) return;
    const dbUrl = process.env.MONGO_URL;
    await connectDB(dbUrl);
+   isConnected = true;
 };
 connectToDatabase();
 
-// Always start server locally for testing, regardless of NODE_ENV
-if (!process.env.VERCEL) {  // Vercel sets process.env.VERCEL automatically
-   const PORT = process.env.PORT || 4000;
-   app.listen(PORT, () => console.log(`🚀 Server running locally on port ${PORT}`));
-} else {
-   // In Vercel, export as serverless function
-   module.exports = app;
-}
-
+// Export serverless handler for Vercel
+module.exports = serverless(app);
