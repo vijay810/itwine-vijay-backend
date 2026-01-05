@@ -56,6 +56,59 @@
 
 
 
+// require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const connectDB = require('../config/db');
+// const errorHandler = require('../middlewares/error.middleware');
+// const serverless = require('serverless-http');
+
+// const app = express();
+
+// // ---------------- MIDDLEWARES ----------------
+// app.use(cors());
+// app.use(express.json());
+
+// // ---------------- TEST ROUTE ----------------
+// app.get('/', (req, res) => res.send('Server is working!'));
+
+// // ---------------- ROUTES ----------------
+// // Uncomment or comment the routes as needed
+// app.use('/auth', require('../routes/auth.routes'));
+// app.use('/leave', require('../routes/leave.routes'));
+// app.use('/clients', require('../routes/clients.routes'));
+// app.use('/user', require('../routes/user.routes'));
+// app.use('/news', require('../routes/news.routes'));
+
+// // ---------------- ERROR HANDLER ----------------
+// app.use(errorHandler);
+
+// // ---------------- DATABASE CONNECTION ----------------
+// let isConnected = false; // track connection for serverless
+// const connectToDatabase = async () => {
+//    if (isConnected) return; // reuse connection
+//    const dbUrl = process.env.MONGO_URL;
+//    await connectDB(dbUrl);
+//    isConnected = true;
+// };
+// connectToDatabase();
+
+// // ---------------- EXPORT / START SERVER ----------------
+// if (process.env.VERCEL) {
+//    // Serverless for Vercel
+//    module.exports = serverless(app);
+// } else {
+//    // Local development
+//    const PORT = process.env.PORT || 4000;
+//    app.listen(PORT, () => {
+//       console.log(`🚀 Server running locally on port ${PORT}`);
+//    });
+// }
+
+
+
+
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -65,42 +118,49 @@ const serverless = require('serverless-http');
 
 const app = express();
 
-// ---------------- MIDDLEWARES ----------------
 app.use(cors());
 app.use(express.json());
 
-// ---------------- TEST ROUTE ----------------
+// Test route
 app.get('/', (req, res) => res.send('Server is working!'));
 
-// ---------------- ROUTES ----------------
-// Uncomment or comment the routes as needed
+// Routes
 app.use('/auth', require('../routes/auth.routes'));
 app.use('/leave', require('../routes/leave.routes'));
 app.use('/clients', require('../routes/clients.routes'));
 app.use('/user', require('../routes/user.routes'));
 app.use('/news', require('../routes/news.routes'));
 
-// ---------------- ERROR HANDLER ----------------
+// Error handler
 app.use(errorHandler);
 
 // ---------------- DATABASE CONNECTION ----------------
-let isConnected = false; // track connection for serverless
+let dbConnected = false;
 const connectToDatabase = async () => {
-   if (isConnected) return; // reuse connection
-   const dbUrl = process.env.MONGO_URL;
-   await connectDB(dbUrl);
-   isConnected = true;
+   if (dbConnected) return;
+   try {
+      await connectDB(process.env.MONGO_URL);
+      dbConnected = true;
+   } catch (err) {
+      console.error('MongoDB connection error', err);
+      throw err; // Important for Vercel to see
+   }
 };
-connectToDatabase();
 
 // ---------------- EXPORT / START SERVER ----------------
 if (process.env.VERCEL) {
-   // Serverless for Vercel
-   module.exports = serverless(app);
+   // For Vercel serverless
+   module.exports = serverless(app, {
+      request: async (req, res) => {
+         // ensure DB is connected before handling each request
+         if (!dbConnected) await connectToDatabase();
+      },
+   });
 } else {
    // Local development
-   const PORT = process.env.PORT || 4000;
-   app.listen(PORT, () => {
-      console.log(`🚀 Server running locally on port ${PORT}`);
+   connectToDatabase().then(() => {
+      const PORT = process.env.PORT || 4000;
+      app.listen(PORT, () => console.log(`🚀 Server running locally on port ${PORT}`));
    });
 }
+
