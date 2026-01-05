@@ -9,7 +9,7 @@ const leaveSchema = new mongoose.Schema({
 
     status: {
         type: Number,
-        default: 0 // 0 Pending | 1 Rejected | 2 Approved
+        default: 0 // 0 Pending | 1 Approved | 2 Rejected
     },
 
     userId: {

@@ -57,9 +57,9 @@ exports.updateLeaveStatus = async (req, res, next) => {
 
                 const statusText =
                     updated.status == 1
-                        ? "Rejected"
+                        ? "Approved"
                         : updated.status == 2
-                            ? "Approved"
+                            ? "Rejected"
                             : "Pending";
 
                 await leaveMail({
