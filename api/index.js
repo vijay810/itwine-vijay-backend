@@ -56,54 +56,54 @@
 
 
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('../config/db');
-const errorHandler = require('../middlewares/error.middleware');
-const serverless = require('serverless-http');
+// require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const connectDB = require('../config/db');
+// const errorHandler = require('../middlewares/error.middleware');
+// const serverless = require('serverless-http');
 
-const app = express();
+// const app = express();
 
-// ---------------- MIDDLEWARES ----------------
-app.use(cors());
-app.use(express.json());
+// // ---------------- MIDDLEWARES ----------------
+// app.use(cors());
+// app.use(express.json());
 
-// ---------------- TEST ROUTE ----------------
-app.get('/', (req, res) => res.send('Server is working!'));
+// // ---------------- TEST ROUTE ----------------
+// app.get('/', (req, res) => res.send('Server is working!'));
 
-// ---------------- ROUTES ----------------
-// Uncomment or comment the routes as needed
-app.use('/auth', require('../routes/auth.routes'));
-app.use('/leave', require('../routes/leave.routes'));
-app.use('/clients', require('../routes/clients.routes'));
-app.use('/user', require('../routes/user.routes'));
-app.use('/news', require('../routes/news.routes'));
+// // ---------------- ROUTES ----------------
+// // Uncomment or comment the routes as needed
+// app.use('/auth', require('../routes/auth.routes'));
+// app.use('/leave', require('../routes/leave.routes'));
+// app.use('/clients', require('../routes/clients.routes'));
+// app.use('/user', require('../routes/user.routes'));
+// app.use('/news', require('../routes/news.routes'));
 
-// ---------------- ERROR HANDLER ----------------
-app.use(errorHandler);
+// // ---------------- ERROR HANDLER ----------------
+// app.use(errorHandler);
 
-// ---------------- DATABASE CONNECTION ----------------
-let isConnected = false; // track connection for serverless
-const connectToDatabase = async () => {
-   if (isConnected) return; // reuse connection
-   const dbUrl = process.env.MONGO_URL;
-   await connectDB(dbUrl);
-   isConnected = true;
-};
-connectToDatabase();
+// // ---------------- DATABASE CONNECTION ----------------
+// let isConnected = false; // track connection for serverless
+// const connectToDatabase = async () => {
+//    if (isConnected) return; // reuse connection
+//    const dbUrl = process.env.MONGO_URL;
+//    await connectDB(dbUrl);
+//    isConnected = true;
+// };
+// connectToDatabase();
 
-// ---------------- EXPORT / START SERVER ----------------
-if (process.env.VERCEL) {
-   // Serverless for Vercel
-   module.exports = serverless(app);
-} else {
-   // Local development
-   const PORT = process.env.PORT || 4000;
-   app.listen(PORT, () => {
-      console.log(`🚀 Server running locally on port ${PORT}`);
-   });
-}
+// // ---------------- EXPORT / START SERVER ----------------
+// if (process.env.VERCEL) {
+//    // Serverless for Vercel
+//    module.exports = serverless(app);
+// } else {
+//    // Local development
+//    const PORT = process.env.PORT || 4000;
+//    app.listen(PORT, () => {
+//       console.log(`🚀 Server running locally on port ${PORT}`);
+//    });
+// }
 
 
 
@@ -125,7 +125,7 @@ if (process.env.VERCEL) {
 // app.get('/', (req, res) => res.send('Server is working!'));
 
 // // Routes
-// // app.use('/auth', require('../routes/auth.routes'));
+// app.use('/auth', require('../routes/auth.routes'));
 // app.use('/leave', require('../routes/leave.routes'));
 // app.use('/clients', require('../routes/clients.routes'));
 // app.use('/user', require('../routes/user.routes'));
@@ -163,4 +163,60 @@ if (process.env.VERCEL) {
 //       app.listen(PORT, () => console.log(`🚀 Server running locally on port ${PORT}`));
 //    });
 // }
+
+
+
+
+
+
+
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('../config/db');
+const errorHandler = require('../middlewares/error.middleware');
+const serverless = require('serverless-http');
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Test route
+app.get('/', async (req, res) => {
+   try {
+      await connectDB(process.env.MONGO_URL); // ensure DB connection
+      res.send('Server is working!');
+   } catch (err) {
+      console.error('DB Error:', err);
+      res.status(500).send('DB connection failed');
+   }
+});
+
+// Routes
+app.use('/auth', require('../routes/auth.routes'));
+app.use('/leave', require('../routes/leave.routes'));
+app.use('/clients', require('../routes/clients.routes'));
+app.use('/user', require('../routes/user.routes'));
+app.use('/news', require('../routes/news.routes'));
+
+// Error handler
+app.use(errorHandler);
+
+// ---------------- EXPORT / START SERVER ----------------
+if (process.env.VERCEL) {
+   // Serverless export
+   module.exports = serverless(app);
+} else {
+   // Local development
+   connectDB(process.env.MONGO_URL)
+      .then(() => {
+         const PORT = process.env.PORT || 4000;
+         app.listen(PORT, () =>
+            console.log(`🚀 Server running locally on port ${PORT}`)
+         );
+      })
+      .catch((err) => console.error('MongoDB connection failed:', err));
+}
 

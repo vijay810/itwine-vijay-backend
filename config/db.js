@@ -39,21 +39,53 @@
 
 
 // config/db.js
+// config/db.js
+// const mongoose = require('mongoose');
+
+// const connectDB = async (mongoUrl) => {
+//     try {
+//         // Connect to MongoDB without deprecated options
+//         await mongoose.connect(mongoUrl);
+//         console.log('✅ MongoDB connected');
+//     } catch (err) {
+//         console.error('MongoDB connection failed', err);
+//         process.exit(1);  // Exit process with failure
+//     }
+// };
+
+// module.exports = connectDB;
+
+
+
+// config/db.js
 const mongoose = require('mongoose');
 
-const connectDB = async (mongoUrl) => {
-    try {
-        // Connect to MongoDB without deprecated options
-        await mongoose.connect(mongoUrl);
-        console.log('✅ MongoDB connected');
-    } catch (err) {
-        console.error('MongoDB connection failed', err);
-        process.exit(1);  // Exit process with failure
+let cached = global.mongoose; // cache connection globally
+
+if (!cached) {
+    cached = global.mongoose = { conn: null, promise: null };
+}
+
+async function connectDB(MONGO_URL) {
+    if (cached.conn) {
+        // Use existing connection
+        return cached.conn;
     }
-};
+
+    if (!cached.promise) {
+        const opts = {
+            bufferCommands: false, // recommended for serverless
+        };
+        cached.promise = mongoose.connect(MONGO_URL, opts).then((mongoose) => {
+            return mongoose;
+        });
+    }
+
+    cached.conn = await cached.promise;
+    return cached.conn;
+}
 
 module.exports = connectDB;
-
 
 
 
