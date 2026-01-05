@@ -39,49 +39,22 @@
 
 
 // config/db.js
-// config/db.js
-// const mongoose = require('mongoose');
-
-// const connectDB = async (mongoUrl) => {
-//     try {
-//         // Connect to MongoDB without deprecated options
-//         await mongoose.connect(mongoUrl);
-//         console.log('✅ MongoDB connected');
-//     } catch (err) {
-//         console.error('MongoDB connection failed', err);
-//         process.exit(1);  // Exit process with failure
-//     }
-// };
-
-// module.exports = connectDB;
-
-
-
-// config/db.js
 const mongoose = require('mongoose');
 
-let isConnected = false; // global connection flag
-
-const connectDB = async (url) => {
-    if (isConnected) {
-        console.log('✅ Using existing MongoDB connection');
-        return mongoose;
-    }
-
+const connectDB = async (mongoUrl) => {
     try {
-        const db = await mongoose.connect(url, {
-            // latest mongoose defaults, no deprecated options
-        });
-        isConnected = db.connections[0].readyState;
+        // Connect to MongoDB without deprecated options
+        await mongoose.connect(mongoUrl);
         console.log('✅ MongoDB connected');
-        return db;
     } catch (err) {
-        console.error('❌ MongoDB connection failed', err);
-        throw err; // important: throw so Vercel sees error
+        console.error('MongoDB connection failed', err);
+        process.exit(1);  // Exit process with failure
     }
 };
 
 module.exports = connectDB;
+
+
 
 
 
