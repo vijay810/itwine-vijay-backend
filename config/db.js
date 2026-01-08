@@ -60,7 +60,6 @@
 const mongoose = require('mongoose');
 
 let cached = global.mongoose;
-
 if (!cached) {
     cached = global.mongoose = { conn: null, promise: null };
 }
@@ -78,6 +77,7 @@ const connectDB = async (mongoUrl) => {
 };
 
 module.exports = connectDB;
+
 
 
 
