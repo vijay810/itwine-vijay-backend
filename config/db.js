@@ -66,20 +66,23 @@ if (!cached) {
 }
 
 const connectDB = async (mongoUrl) => {
-    if (cached.conn) return cached.conn;
+    if (cached.conn) {
+        return cached.conn;
+    }
 
     if (!cached.promise) {
-        cached.promise = mongoose.connect(mongoUrl).then((mongoose) => {
-            console.log('✅ MongoDB connected');
-            return mongoose;
+        cached.promise = mongoose.connect(mongoUrl, {
+            bufferCommands: false,
         });
     }
 
     cached.conn = await cached.promise;
+    console.log('✅ MongoDB connected');
     return cached.conn;
 };
 
 module.exports = connectDB;
+
 
 
 
