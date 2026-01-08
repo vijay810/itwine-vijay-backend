@@ -109,49 +109,62 @@
 
 
 
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const connectDB = require('../config/db');
-const errorHandler = require('../middlewares/error.middleware');
+// require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const connectDB = require('../config/db');
+// const errorHandler = require('../middlewares/error.middleware');
 
+// const app = express();
+
+// app.use(cors());
+// app.use(express.json());
+
+// // Test route
+// app.get('/', (req, res) => res.send('Server is working!'));
+
+// // Routes
+// app.use('/auth', require('../routes/auth.routes'));
+// app.use('/leave', require('../routes/leave.routes'));
+// app.use('/clients', require('../routes/clients.routes'));
+// app.use('/user', require('../routes/user.routes'));
+// app.use('/news', require('../routes/news.routes'));
+
+// // Error handler
+// app.use(errorHandler);
+
+// // ---------------- DATABASE CONNECTION ----------------
+// let dbConnected = false;
+// const connectToDatabase = async () => {
+//    if (dbConnected) return;
+//    try {
+//       await connectDB(process.env.MONGO_URL);
+//       dbConnected = true;
+//    } catch (err) {
+//       console.error('MongoDB connection error', err);
+//       throw err; // Important for Vercel to see
+//    }
+// };
+
+//    connectToDatabase().then(() => {
+//       const PORT = process.env.PORT || 4000;
+//       app.listen(PORT, () => console.log(`🚀 Server running locally on port ${PORT}`));
+//    });
+
+
+
+
+
+
+
+
+
+
+const express = require('express');
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-
-// ---------------- DATABASE CONNECTION ----------------
-let dbConnected = false;
-
-const connectToDatabase = async () => {
-   if (dbConnected) return;
-   await connectDB(process.env.MONGO_URL);
-   dbConnected = true;
-};
-
-// Connect DB on cold start
-connectToDatabase().catch(err => {
-   console.error('MongoDB connection error:', err);
-});
-
-// ---------------- ROUTES ----------------
-
-// Test route
 app.get('/', (req, res) => {
-   res.send('Server is working!');
+   res.status(200).send('HELLO FROM VERCEL');
 });
 
-// Routes
-app.use('/auth', require('../routes/auth.routes'));
-app.use('/leave', require('../routes/leave.routes'));
-app.use('/clients', require('../routes/clients.routes'));
-app.use('/user', require('../routes/user.routes'));
-app.use('/news', require('../routes/news.routes'));
-
-// Error handler
-app.use(errorHandler);
-
-// ❌ NO serverless-http
-// ❌ NO app.listen
-// ✅ Vercel will handle serverless automatically
 module.exports = app;
