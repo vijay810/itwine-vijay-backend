@@ -180,9 +180,20 @@ async function ensureDB() {
    }
 }
 
-// ---------------- ROUTES ----------------
+// ---------------- SERVERLESS SAFE ROUTE LOADER ----------------
+function serverlessRoute(routePath) {
+   return async (req, res, next) => {
+      try {
+         await ensureDB();
+         const route = require(routePath); // require here to ensure DB is ready
+         return route(req, res, next);
+      } catch (err) {
+         next(err);
+      }
+   };
+}
 
-// Test route (DB-safe)
+// ---------------- TEST ROUTE ----------------
 app.get('/', async (req, res, next) => {
    try {
       await ensureDB();
@@ -192,25 +203,18 @@ app.get('/', async (req, res, next) => {
    }
 });
 
-// Other routes (ensure DB before use)
-app.use(async (req, res, next) => {
-   try {
-      await ensureDB();
-      next();
-   } catch (err) {
-      next(err);
-   }
-});
+// ---------------- ROUTES ----------------
+// Wrap routes with DB loader
+app.use('/auth', serverlessRoute('../routes/auth.routes'));
+app.use('/leave', serverlessRoute('../routes/leave.routes'));
+app.use('/clients', serverlessRoute('../routes/clients.routes'));
+app.use('/user', serverlessRoute('../routes/user.routes'));
+app.use('/news', serverlessRoute('../routes/news.routes'));
 
-app.use('/auth', require('../routes/auth.routes'));
-app.use('/leave', require('../routes/leave.routes'));
-app.use('/clients', require('../routes/clients.routes'));
-app.use('/user', require('../routes/user.routes'));
-app.use('/news', require('../routes/news.routes'));
-
-// Error handler
+// ---------------- ERROR HANDLER ----------------
 app.use(errorHandler);
 
-// Export app for Vercel
+// ---------------- EXPORT APP FOR VERCEL ----------------
 module.exports = app;
+
 
