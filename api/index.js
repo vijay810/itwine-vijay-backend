@@ -160,99 +160,135 @@
 
 
 
+// const express = require('express');
+// const cors = require('cors');
+// const connectDB = require('../config/db');
+// const errorHandler = require('../middlewares/error.middleware');
+
+// const app = express();
+
+// app.use(cors());
+// app.use(express.json());
+
+// // ---------------- DATABASE CONNECTION ----------------
+// let dbConnected = false;
+// const ensureDB = async () => {
+//    if (!dbConnected) {
+//       await connectDB(process.env.MONGO_URL);
+//       dbConnected = true;
+//    }
+// };
+
+// // ---------------- DB SAFE ROUTE LOADER ----------------
+// function loadRoute(routePath) {
+//    const router = require(routePath);
+//    return async (req, res, next) => {
+//       try {
+//          await ensureDB();
+//          router(req, res, next);  // Call the original router
+//       } catch (err) {
+//          next(err);
+//       }
+//    };
+// }
+
+// // ---------------- TEST ROUTE ----------------
+// app.get('/', async (req, res, next) => {
+//    try {
+//       await ensureDB();
+//       res.send('Server is working!');
+//    } catch (err) {
+//       next(err);
+//    }
+// });
+
+// // ---------------- ROUTES ----------------
+// // Use normal routers with DB-safe wrapper
+// app.use('/auth', async (req, res, next) => {
+//    try {
+//       await ensureDB();
+//       const authRouter = require('../routes/auth.routes');
+//       authRouter(req, res, next);
+//    } catch (err) {
+//       next(err);
+//    }
+// });
+
+// app.use('/leave', async (req, res, next) => {
+//    try {
+//       await ensureDB();
+//       const leaveRouter = require('../routes/leave.routes');
+//       leaveRouter(req, res, next);
+//    } catch (err) {
+//       next(err);
+//    }
+// });
+
+// app.use('/clients', async (req, res, next) => {
+//    try {
+//       await ensureDB();
+//       const clientsRouter = require('../routes/clients.routes');
+//       clientsRouter(req, res, next);
+//    } catch (err) {
+//       next(err);
+//    }
+// });
+
+// app.use('/user', async (req, res, next) => {
+//    try {
+//       await ensureDB();
+//       const userRouter = require('../routes/user.routes');
+//       userRouter(req, res, next);
+//    } catch (err) {
+//       next(err);
+//    }
+// });
+
+// app.use('/news', async (req, res, next) => {
+//    try {
+//       await ensureDB();
+//       const newsRouter = require('../routes/news.routes');
+//       newsRouter(req, res, next);
+//    } catch (err) {
+//       next(err);
+//    }
+// });
+
+// // ---------------- ERROR HANDLER ----------------
+// app.use(errorHandler);
+
+// module.exports = app;
+
+
+
+// index.js
+require('dotenv').config(); // Load .env variables
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('../config/db');
 const errorHandler = require('../middlewares/error.middleware');
+
+// Routes
+const authRouter = require('../routes/auth.routes');
+const leaveRouter = require('../routes/leave.routes');
+const clientsRouter = require('../routes/clients.routes');
+const userRouter = require('../routes/user.routes');
+const newsRouter = require('../routes/news.routes');
 
 const app = express();
 
+// ---------------- MIDDLEWARES ----------------
 app.use(cors());
 app.use(express.json());
 
-// ---------------- DATABASE CONNECTION ----------------
-let dbConnected = false;
-const ensureDB = async () => {
-   if (!dbConnected) {
-      await connectDB(process.env.MONGO_URL);
-      dbConnected = true;
-   }
-};
-
-// ---------------- DB SAFE ROUTE LOADER ----------------
-function loadRoute(routePath) {
-   const router = require(routePath);
-   return async (req, res, next) => {
-      try {
-         await ensureDB();
-         router(req, res, next);  // Call the original router
-      } catch (err) {
-         next(err);
-      }
-   };
-}
-
 // ---------------- TEST ROUTE ----------------
-app.get('/', async (req, res, next) => {
-   try {
-      await ensureDB();
-      res.send('Server is working!');
-   } catch (err) {
-      next(err);
-   }
-});
+app.get('/', (req, res) => res.send('Server is working!'));
 
 // ---------------- ROUTES ----------------
-// Use normal routers with DB-safe wrapper
-app.use('/auth', async (req, res, next) => {
-   try {
-      await ensureDB();
-      const authRouter = require('../routes/auth.routes');
-      authRouter(req, res, next);
-   } catch (err) {
-      next(err);
-   }
-});
-
-app.use('/leave', async (req, res, next) => {
-   try {
-      await ensureDB();
-      const leaveRouter = require('../routes/leave.routes');
-      leaveRouter(req, res, next);
-   } catch (err) {
-      next(err);
-   }
-});
-
-app.use('/clients', async (req, res, next) => {
-   try {
-      await ensureDB();
-      const clientsRouter = require('../routes/clients.routes');
-      clientsRouter(req, res, next);
-   } catch (err) {
-      next(err);
-   }
-});
-
-app.use('/user', async (req, res, next) => {
-   try {
-      await ensureDB();
-      const userRouter = require('../routes/user.routes');
-      userRouter(req, res, next);
-   } catch (err) {
-      next(err);
-   }
-});
-
-app.use('/news', async (req, res, next) => {
-   try {
-      await ensureDB();
-      const newsRouter = require('../routes/news.routes');
-      newsRouter(req, res, next);
-   } catch (err) {
-      next(err);
-   }
-});
+app.use('/auth', authRouter);
+app.use('/leave', leaveRouter);
+app.use('/clients', clientsRouter);
+app.use('/user', userRouter);
+app.use('/news', newsRouter);
 
 // ---------------- ERROR HANDLER ----------------
 app.use(errorHandler);
