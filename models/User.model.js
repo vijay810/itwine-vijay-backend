@@ -38,6 +38,10 @@ const UserSchema = new mongoose.Schema(
         type: String,
         required: true
     },
+    confirmpassword:{
+        type: String,
+        required: true
+    },
     status: {
         type: Number,
         required: true

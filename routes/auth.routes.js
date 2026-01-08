@@ -9,6 +9,9 @@ router.post('/register', authController.register);
 // Login an existing user
 router.post('/login', authController.login);
 
+// Forgot password
+router.post('/forgot-password', authController.forgotPassword);
+
 // Verify the token (requires authentication)
 router.get('/verify-token', protect, (req, res) => {
     res.status(200).json({

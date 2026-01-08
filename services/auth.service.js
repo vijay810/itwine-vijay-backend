@@ -55,6 +55,32 @@ exports.login = async ({ email, password, role }) => {
     };
 };
 
+exports.forgotPassword = async ({ email, user_id, password, confirmPassword }) => {
+    if (password !== confirmPassword) {
+        throw new Error('Passwords do not match');
+    }
+
+    const user = await Users.findOne({ email, user_id });
+    if (!user) {
+        throw new Error('Invalid email or user ID');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    return {
+        message: 'Password updated successfully'
+    };
+};
+
+
+
+
+
+
+
 exports.verifyToken = async (token) => {
     try {
         return jwt.verify(token, JWT_SECRET);

@@ -25,3 +25,18 @@ exports.login = async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 };
+
+exports.forgotPassword = async (req, res) => {
+    try {
+        const data = await authService.forgotPassword(req.body);
+
+        res.status(200).json({
+            status: 200,
+            message: data.message
+        });
+    } catch (err) {
+        res.status(400).json({
+            message: err.message
+        });
+    }
+};
