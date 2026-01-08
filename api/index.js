@@ -199,7 +199,7 @@ app.get('/', (req, res) => {
    res.send('✅ Server is working!');
 });
 
-app.use('/auth', require('../routes/auth.routes'));
+// app.use('/auth', require('../routes/auth.routes'));
 app.use('/leave', require('../routes/leave.routes'));
 app.use('/clients', require('../routes/clients.routes'));
 app.use('/user', require('../routes/user.routes'));
