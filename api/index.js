@@ -172,21 +172,20 @@ app.use(express.json());
 
 // ---------------- DATABASE CONNECTION ----------------
 let dbConnected = false;
-
-async function ensureDB() {
+const ensureDB = async () => {
    if (!dbConnected) {
       await connectDB(process.env.MONGO_URL);
       dbConnected = true;
    }
-}
+};
 
-// ---------------- SERVERLESS SAFE ROUTE LOADER ----------------
-function serverlessRoute(routePath) {
+// ---------------- DB SAFE ROUTE LOADER ----------------
+function loadRoute(routePath) {
+   const router = require(routePath);
    return async (req, res, next) => {
       try {
          await ensureDB();
-         const route = require(routePath); // require here to ensure DB is ready
-         return route(req, res, next);
+         router(req, res, next);  // Call the original router
       } catch (err) {
          next(err);
       }
@@ -204,17 +203,58 @@ app.get('/', async (req, res, next) => {
 });
 
 // ---------------- ROUTES ----------------
-// Wrap routes with DB loader
-app.use('/auth', serverlessRoute('../routes/auth.routes'));
-app.use('/leave', serverlessRoute('../routes/leave.routes'));
-app.use('/clients', serverlessRoute('../routes/clients.routes'));
-app.use('/user', serverlessRoute('../routes/user.routes'));
-app.use('/news', serverlessRoute('../routes/news.routes'));
+// Use normal routers with DB-safe wrapper
+app.use('/auth', async (req, res, next) => {
+   try {
+      await ensureDB();
+      const authRouter = require('../routes/auth.routes');
+      authRouter(req, res, next);
+   } catch (err) {
+      next(err);
+   }
+});
+
+app.use('/leave', async (req, res, next) => {
+   try {
+      await ensureDB();
+      const leaveRouter = require('../routes/leave.routes');
+      leaveRouter(req, res, next);
+   } catch (err) {
+      next(err);
+   }
+});
+
+app.use('/clients', async (req, res, next) => {
+   try {
+      await ensureDB();
+      const clientsRouter = require('../routes/clients.routes');
+      clientsRouter(req, res, next);
+   } catch (err) {
+      next(err);
+   }
+});
+
+app.use('/user', async (req, res, next) => {
+   try {
+      await ensureDB();
+      const userRouter = require('../routes/user.routes');
+      userRouter(req, res, next);
+   } catch (err) {
+      next(err);
+   }
+});
+
+app.use('/news', async (req, res, next) => {
+   try {
+      await ensureDB();
+      const newsRouter = require('../routes/news.routes');
+      newsRouter(req, res, next);
+   } catch (err) {
+      next(err);
+   }
+});
 
 // ---------------- ERROR HANDLER ----------------
 app.use(errorHandler);
 
-// ---------------- EXPORT APP FOR VERCEL ----------------
 module.exports = app;
-
-
