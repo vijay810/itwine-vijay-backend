@@ -161,10 +161,56 @@
 
 
 const express = require('express');
+const cors = require('cors');
+const connectDB = require('../config/db');
+const errorHandler = require('../middlewares/error.middleware');
+
 const app = express();
 
-app.get('/', (req, res) => {
-   res.status(200).send('HELLO FROM VERCEL');
+app.use(cors());
+app.use(express.json());
+
+// ---------------- DATABASE CONNECTION ----------------
+let dbConnected = false;
+
+async function ensureDB() {
+   if (!dbConnected) {
+      await connectDB(process.env.MONGO_URL);
+      dbConnected = true;
+   }
+}
+
+// ---------------- ROUTES ----------------
+
+// Test route (DB-safe)
+app.get('/', async (req, res, next) => {
+   try {
+      await ensureDB();
+      res.send('Server is working!');
+   } catch (err) {
+      next(err);
+   }
 });
 
+// Other routes (ensure DB before use)
+app.use(async (req, res, next) => {
+   try {
+      await ensureDB();
+      next();
+   } catch (err) {
+      next(err);
+   }
+});
+
+app.use('/auth', require('../routes/auth.routes'));
+app.use('/leave', require('../routes/leave.routes'));
+app.use('/clients', require('../routes/clients.routes'));
+app.use('/user', require('../routes/user.routes'));
+app.use('/news', require('../routes/news.routes'));
+
+// Error handler
+app.use(errorHandler);
+
+// Export app for Vercel
 module.exports = app;
+
