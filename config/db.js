@@ -40,20 +40,20 @@
 
 // config/db.js
 // config/db.js
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 
-const connectDB = async (mongoUrl) => {
-    try {
-        // Connect to MongoDB without deprecated options
-        await mongoose.connect(mongoUrl);
-        console.log('✅ MongoDB connected');
-    } catch (err) {
-        console.error('MongoDB connection failed', err);
-        process.exit(1);  // Exit process with failure
-    }
-};
+// const connectDB = async (mongoUrl) => {
+//     try {
+//         // Connect to MongoDB without deprecated options
+//         await mongoose.connect(mongoUrl);
+//         console.log('✅ MongoDB connected');
+//     } catch (err) {
+//         console.error('MongoDB connection failed', err);
+//         process.exit(1);  // Exit process with failure
+//     }
+// };
 
-module.exports = connectDB;
+// module.exports = connectDB;
 
 
 
@@ -83,6 +83,29 @@ module.exports = connectDB;
 
 
 
+const mongoose = require('mongoose');
+
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+const connectDB = async (mongoUrl) => {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(mongoUrl).then((mongoose) => {
+      console.log('✅ MongoDB connected (Vercel)');
+      return mongoose;
+    });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+};
+
+module.exports = connectDB;
 
 
 
