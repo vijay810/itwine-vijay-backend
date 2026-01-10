@@ -262,12 +262,46 @@
 
 
 // index.js
-require('dotenv').config(); // Load .env variables
+// require('dotenv').config(); // Load .env variables
+// const express = require('express');
+// const cors = require('cors');
+// const errorHandler = require('../middlewares/error.middleware');
+
+// // Routes
+// const authRouter = require('../routes/auth.routes');
+// const leaveRouter = require('../routes/leave.routes');
+// const clientsRouter = require('../routes/clients.routes');
+// const userRouter = require('../routes/user.routes');
+// const newsRouter = require('../routes/news.routes');
+
+// const app = express();
+
+// // ---------------- MIDDLEWARES ----------------
+// app.use(cors());
+// app.use(express.json());
+
+// // ---------------- TEST ROUTE ----------------
+// app.get('/', (req, res) => res.send('Server is working!'));
+
+// // ---------------- ROUTES ----------------
+// app.use('/auth', authRouter);
+// app.use('/leave', leaveRouter);
+// app.use('/clients', clientsRouter);
+// app.use('/user', userRouter);
+// app.use('/news', newsRouter);
+
+// // ---------------- ERROR HANDLER ----------------
+// app.use(errorHandler);
+
+// module.exports = app;
+
+
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('../config/db');
 const errorHandler = require('../middlewares/error.middleware');
 
-// Routes
 const authRouter = require('../routes/auth.routes');
 const leaveRouter = require('../routes/leave.routes');
 const clientsRouter = require('../routes/clients.routes');
@@ -276,21 +310,27 @@ const newsRouter = require('../routes/news.routes');
 
 const app = express();
 
-// ---------------- MIDDLEWARES ----------------
 app.use(cors());
 app.use(express.json());
 
-// ---------------- TEST ROUTE ----------------
+// 🔥 CONNECT DB ON EVERY REQUEST SAFELY
+app.use(async (req, res, next) => {
+  try {
+    await connectDB(process.env.MONGO_URL);
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.get('/', (req, res) => res.send('Server is working!'));
 
-// ---------------- ROUTES ----------------
 app.use('/auth', authRouter);
 app.use('/leave', leaveRouter);
 app.use('/clients', clientsRouter);
 app.use('/user', userRouter);
 app.use('/news', newsRouter);
 
-// ---------------- ERROR HANDLER ----------------
 app.use(errorHandler);
 
 module.exports = app;
